@@ -1,0 +1,42 @@
+name: MLflow CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  training:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+
+        with:
+          python-version: 3.12.7
+
+      - name: Install Dependency
+        run: |
+          pip install mlflow==2.19.0
+          pip install matplotlib
+          pip install numpy
+          pip install optuna
+          pip install pandas
+          pip install scikit-learn
+          pip install xgboost
+
+      - name: Run Training
+        run: |
+          cd MLProject
+          mlflow run . --env-manager=local
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+
+        with:
+          name: trained-model
+          path: MLProject/mlruns
