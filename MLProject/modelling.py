@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import mlflow
 import optuna
+import os
 import pandas as pd
 
 from sklearn.metrics import (
@@ -181,6 +182,18 @@ mlflow.log_metric(
     "accuracy",
     accuracy
 )
+
+# ======================================
+# CREATE ARTIFACTS FOLDER
+# ======================================
+
+folder_name = "artifacts"
+
+if not os.path.exists(folder_name):
+    os.makedirs(folder_name)
+    print(f"Folder '{folder_name}' berhasil dibuat.")
+else:
+    print(f"Folder '{folder_name}' sudah ada.")
 
 # ======================================
 # CONFUSION MATRIX
