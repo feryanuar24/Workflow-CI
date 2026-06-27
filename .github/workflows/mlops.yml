@@ -39,21 +39,16 @@ jobs:
           cd MLProject
           python modelling.py
 
-      - name: Read Run ID
-        run: |
-          RUN_ID=$(cat MLProject/run_id.txt)
-          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: trained-model
-          path: MLProject/mlruns
+          path: MLProject/artifacts/model
 
       - name: Build Docker
         run: |
           mlflow models build-docker \
-          --model-uri runs:/$RUN_ID/model \
+          --model-uri MLProject/artifacts/model \
           --name hotel-booking-model
 
       - name: Login to Docker Hub

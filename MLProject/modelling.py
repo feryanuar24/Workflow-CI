@@ -6,6 +6,7 @@ import os
 import pandas as pd
 
 from dotenv import load_dotenv
+from pathlib import Path
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -135,15 +136,6 @@ mlflow.set_experiment("Hotel Booking - Workflow CI")
 with mlflow.start_run() as run:
 
     # ======================================
-    # RUN ID
-    # ======================================
-
-    run_id = run.info.run_id
-
-    with open("run_id.txt", "w") as f:
-        f.write(run_id)
-
-    # ======================================
     # PARAMETER
     # ======================================
 
@@ -170,6 +162,13 @@ with mlflow.start_run() as run:
         learning_rate
     )
 
+    # ======================================
+    # CREATE ARTIFACTS FOLDER
+    # ======================================
+
+    MODEL_DIR = Path("artifacts/model")
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+
     # ==========================================
     # MODEL TRAINING
     # ==========================================
@@ -185,6 +184,19 @@ with mlflow.start_run() as run:
     model.fit(
         X_train,
         y_train
+    )
+
+    mlflow.sklearn.save_model(
+        sk_model=model,
+        path=str(MODEL_DIR),
+        serialization_format="cloudpickle",
+        pip_requirements=[
+            "mlflow==2.19.0",
+            "numpy==2.2.6",
+            "pandas==2.2.3",
+            "scikit-learn==1.6.1",
+            "xgboost==2.1.4"
+        ]
     )
 
     mlflow.sklearn.log_model(
@@ -219,18 +231,6 @@ with mlflow.start_run() as run:
         "accuracy",
         accuracy
     )
-
-    # ======================================
-    # CREATE ARTIFACTS FOLDER
-    # ======================================
-
-    folder_name = "artifacts"
-
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
-        print(f"Folder '{folder_name}' berhasil dibuat.")
-    else:
-        print(f"Folder '{folder_name}' sudah ada.")
 
     # ======================================
     # CONFUSION MATRIX
