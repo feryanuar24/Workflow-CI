@@ -39,12 +39,10 @@ jobs:
           cd MLProject
           python modelling.py
 
-      - name: Get Latest Run
-        id: runid
+      - name: Read Run ID
         run: |
-          RUN_ID=$(python MLProject/get_latest_run.py)
+          RUN_ID=$(cat MLProject/run_id.txt)
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-          echo "Run ID : $RUN_ID"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

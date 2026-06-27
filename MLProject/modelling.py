@@ -132,7 +132,16 @@ dagshub.init(
 
 mlflow.set_experiment("Hotel Booking - Workflow CI")
 
-with mlflow.start_run():
+with mlflow.start_run() as run:
+
+    # ======================================
+    # RUN ID
+    # ======================================
+
+    run_id = run.info.run_id
+
+    with open("run_id.txt", "w") as f:
+        f.write(run_id)
 
     # ======================================
     # PARAMETER
