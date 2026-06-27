@@ -10,9 +10,11 @@ dependencies:
 
   - pip:
       - mlflow==2.19.0
+      - dagshub
       - matplotlib
       - numpy
       - optuna
       - pandas
+      - python-dotenv
       - scikit-learn
       - xgboost

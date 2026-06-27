@@ -30,6 +30,7 @@ jobs:
           pip install numpy
           pip install optuna
           pip install pandas
+          pip install python-dotenv
           pip install scikit-learn
           pip install xgboost
 
