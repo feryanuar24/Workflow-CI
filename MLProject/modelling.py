@@ -131,7 +131,7 @@ dagshub.init(
     mlflow=True
 )
 
-mlflow.set_experiment("Hotel Booking - Workflow CI")
+mlflow.set_experiment("Workflow CI")
 
 with mlflow.start_run() as run:
 

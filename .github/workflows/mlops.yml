@@ -1,4 +1,4 @@
-name: Hotel Booking MLOps
+name: Workflow CI
 
 on:
   push:
