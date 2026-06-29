@@ -123,6 +123,10 @@ DAGSHUB_TOKEN = os.getenv("DAGSHUB_TOKEN")
 if DAGSHUB_TOKEN is None:
     raise Exception("DAGSHUB_TOKEN belum ditemukan.")
 
+mlflow.end_run()
+os.environ.pop("MLFLOW_RUN_ID", None)
+os.environ.pop("MLFLOW_PARENT_RUN_ID", None)
+
 dagshub.auth.add_app_token(DAGSHUB_TOKEN)
 
 dagshub.init(
