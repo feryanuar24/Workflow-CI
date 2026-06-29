@@ -133,187 +133,185 @@ dagshub.init(
 
 mlflow.set_experiment("Workflow CI")
 
-with mlflow.start_run() as run:
+# ======================================
+# PARAMETER
+# ======================================
 
-    # ======================================
-    # PARAMETER
-    # ======================================
+n_estimators = best_params["n_estimators"]
+max_depth = best_params["max_depth"]
+learning_rate = best_params["learning_rate"]
 
-    n_estimators = best_params["n_estimators"]
-    max_depth = best_params["max_depth"]
-    learning_rate = best_params["learning_rate"]
+print(f"n_estimators: {n_estimators}")
+print(f"max_depth: {max_depth}")
+print(f"learning_rate: {learning_rate}")
 
-    print(f"n_estimators: {n_estimators}")
-    print(f"max_depth: {max_depth}")
-    print(f"learning_rate: {learning_rate}")
+mlflow.log_param(
+    "n_estimators",
+    n_estimators
+)
 
-    mlflow.log_param(
-        "n_estimators",
-        n_estimators
-    )
+mlflow.log_param(
+    "max_depth",
+    max_depth
+)
 
-    mlflow.log_param(
-        "max_depth",
-        max_depth
-    )
+mlflow.log_param(
+    "learning_rate",
+    learning_rate
+)
 
-    mlflow.log_param(
-        "learning_rate",
-        learning_rate
-    )
+# ======================================
+# CREATE ARTIFACTS FOLDER
+# ======================================
 
-    # ======================================
-    # CREATE ARTIFACTS FOLDER
-    # ======================================
+MODEL_DIR = Path("artifacts/model")
+MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    MODEL_DIR = Path("artifacts/model")
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+# ==========================================
+# MODEL TRAINING
+# ==========================================
 
-    # ==========================================
-    # MODEL TRAINING
-    # ==========================================
+model = XGBClassifier(
+    n_estimators=n_estimators,
+    max_depth=max_depth,
+    learning_rate=learning_rate,
+    random_state=42,
+    eval_metric="logloss"
+)
 
-    model = XGBClassifier(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-        learning_rate=learning_rate,
-        random_state=42,
-        eval_metric="logloss"
-    )
+model.fit(
+    X_train,
+    y_train
+)
 
-    model.fit(
-        X_train,
-        y_train
-    )
+mlflow.sklearn.save_model(
+    sk_model=model,
+    path=str(MODEL_DIR),
+    serialization_format="cloudpickle",
+    pip_requirements=[
+        "mlflow==2.19.0",
+        "numpy==2.2.6",
+        "pandas==2.2.3",
+        "scikit-learn==1.6.1",
+        "xgboost==2.1.4"
+    ]
+)
 
-    mlflow.sklearn.save_model(
-        sk_model=model,
-        path=str(MODEL_DIR),
-        serialization_format="cloudpickle",
-        pip_requirements=[
-            "mlflow==2.19.0",
-            "numpy==2.2.6",
-            "pandas==2.2.3",
-            "scikit-learn==1.6.1",
-            "xgboost==2.1.4"
-        ]
-    )
+mlflow.sklearn.log_model(
+    sk_model=model,
+    artifact_path="model",
+    serialization_format="cloudpickle",
+    pip_requirements=[
+        "mlflow==2.19.0",
+        "numpy==2.2.6",
+        "pandas==2.2.3",
+        "scikit-learn==1.6.1",
+        "xgboost==2.1.4"
+    ]
+)
 
-    mlflow.sklearn.log_model(
-        sk_model=model,
-        artifact_path="model",
-        serialization_format="cloudpickle",
-        pip_requirements=[
-            "mlflow==2.19.0",
-            "numpy==2.2.6",
-            "pandas==2.2.3",
-            "scikit-learn==1.6.1",
-            "xgboost==2.1.4"
-        ]
-    )
+predictions = model.predict(
+    X_test
+)
 
-    predictions = model.predict(
-        X_test
-    )
+# ==========================================
+# ACCURACY
+# ==========================================
 
-    # ==========================================
-    # ACCURACY
-    # ==========================================
+accuracy = accuracy_score(
+    y_test,
+    predictions
+)
 
-    accuracy = accuracy_score(
-        y_test,
-        predictions
-    )
+print(f"Skor Akurasi: {accuracy}")
 
-    print(f"Skor Akurasi: {accuracy}")
+mlflow.log_metric(
+    "accuracy",
+    accuracy
+)
 
-    mlflow.log_metric(
-        "accuracy",
-        accuracy
-    )
+# ======================================
+# CONFUSION MATRIX
+# ======================================
 
-    # ======================================
-    # CONFUSION MATRIX
-    # ======================================
+cm = confusion_matrix(
+    y_test,
+    predictions
+)
 
-    cm = confusion_matrix(
-        y_test,
-        predictions
-    )
+plt.figure(figsize=(6,4))
 
-    plt.figure(figsize=(6,4))
+plt.imshow(cm)
 
-    plt.imshow(cm)
+plt.title(
+    "Confusion Matrix"
+)
 
-    plt.title(
-        "Confusion Matrix"
-    )
+plt.colorbar()
 
-    plt.colorbar()
+plt.savefig(
+    "artifacts/confusion_matrix.png"
+)
 
-    plt.savefig(
-        "artifacts/confusion_matrix.png"
-    )
+plt.close()
 
-    plt.close()
+print("Confusion matrix berhasil disimpan ke artifacts/confusion_matrix.png")
 
-    print("Confusion matrix berhasil disimpan ke artifacts/confusion_matrix.png")
+mlflow.log_artifact(
+    "artifacts/confusion_matrix.png"
+)
 
-    mlflow.log_artifact(
-        "artifacts/confusion_matrix.png"
-    )
+# ======================================
+# CLASSIFICATION REPORT
+# ======================================
 
-    # ======================================
-    # CLASSIFICATION REPORT
-    # ======================================
+report = classification_report(
+    y_test,
+    predictions
+)
 
-    report = classification_report(
-        y_test,
-        predictions
-    )
+with open(
+    "artifacts/classification_report.txt",
+    "w"
+) as f:
 
-    with open(
-        "artifacts/classification_report.txt",
-        "w"
-    ) as f:
+    f.write(report)
 
-        f.write(report)
+print("Classification report berhasil disimpan ke artifacts/classification_report.txt")
 
-    print("Classification report berhasil disimpan ke artifacts/classification_report.txt")
+mlflow.log_artifact(
+    "artifacts/classification_report.txt"
+)
 
-    mlflow.log_artifact(
-        "artifacts/classification_report.txt"
-    )
+# ======================================
+# FEATURE IMPORTANCE
+# ======================================
 
-    # ======================================
-    # FEATURE IMPORTANCE
-    # ======================================
+importance = model.feature_importances_
 
-    importance = model.feature_importances_
+plt.figure(
+    figsize=(12,6)
+)
 
-    plt.figure(
-        figsize=(12,6)
-    )
+plt.bar(
+    X.columns,
+    importance
+)
 
-    plt.bar(
-        X.columns,
-        importance
-    )
+plt.xticks(
+    rotation=90
+)
 
-    plt.xticks(
-        rotation=90
-    )
+plt.tight_layout()
 
-    plt.tight_layout()
+plt.savefig(
+    "artifacts/feature_importance.png"
+)
 
-    plt.savefig(
-        "artifacts/feature_importance.png"
-    )
+plt.close()
 
-    plt.close()
+print("Feature importance berhasil disimpan ke artifacts/feature_importance.png")
 
-    print("Feature importance berhasil disimpan ke artifacts/feature_importance.png")
-
-    mlflow.log_artifact(
-        "artifacts/feature_importance.png"
-    )
+mlflow.log_artifact(
+    "artifacts/feature_importance.png"
+)

@@ -37,7 +37,7 @@ jobs:
       - name: Run Training
         run: |
           cd MLProject
-          python modelling.py
+          mlflow run MLproject --env-manager=local
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
